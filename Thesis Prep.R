@@ -8,7 +8,7 @@ library(stringr)
 options(scipen = 999)
 
 # set wd
-setwd('/Users/rileyramos/Desktop/DesktopItems/FA24Classes/Thesis/Thesis Data')
+setwd('/Users/rileyramos/Desktop/git/honorsthesis/data')
 
 # Function to transform the census_tract value
 transform_census_tract <- function(value) {
