@@ -115,65 +115,19 @@ d_total <- d_transposed %>%
   # calculate POC population for analysis
   mutate(poc_population = total_population - white_population)
 
-# =============================================================================
-# Section 3: Travel Time to Work Data
-# =============================================================================
-travel_time_raw <- read_csv(here("data", "raw",'transportation_commute_B08303.csv'))
-
-tt_transposed <- as.data.frame(t(travel_time_raw[, -1]))
-colnames(tt_transposed) <- travel_time_raw$`Label (Grouping)`
-tt_transposed <- cbind(CensusTract = rownames(tt_transposed), tt_transposed)
-rownames(tt_transposed) <- NULL
-
-tt_final <- tt_transposed %>%
-  # pivot to long format, separating transportation type and time interval
-  pivot_longer(
-    cols      = -CensusTract,
-    names_to  = c("TransportationType", "TimeInterval"),
-    names_pattern = "(.*?):? ?(.*)",
-    values_to = "Count"
-  ) %>%
-  # extract transportation type from the TimeInterval column
-  mutate(
-    TransportationType = str_extract(TimeInterval, "(.*?):"),
-    TimeInterval = ifelse(str_detect(TimeInterval, "(.*?):"), "Total", TimeInterval),
-    TransportationType = gsub(":", "", TransportationType),
-    TransportationType = ifelse(TransportationType == "Total", "All Types", TransportationType)
-  )  %>%
-  # standardize labels
-  mutate(
-    TimeInterval       = ifelse(str_detect(TimeInterval, "Total"), "All time intervals", TimeInterval),
-    TransportationType = ifelse(TransportationType == "All Types", "All transportation methods", TransportationType)
-  ) %>%
-  # forward-fill transportation type for rows where it is missing
-  fill(TransportationType, .direction = "down") %>%
-  mutate(TransportationType = str_trim(TransportationType),
-         TimeInterval       = str_trim(TimeInterval)) %>%
-  filter(!grepl("Margin of Error", CensusTract)) %>%
-  # extract and standardize census tract format using helper function
-  mutate(CensusTract = str_extract(CensusTract, TRACT_PATTERN)) %>%
-  mutate(Count = as.numeric(str_trim(Count))) %>%
-  mutate(CensusTract = sapply(CensusTract, transform_census_tract)) %>%
-  rename(
-    census_tract        = CensusTract,
-    transportation_type = TransportationType,
-    time_interval       = TimeInterval,
-    count               = Count
-  )
-
 
 # =============================================================================
-# Section 4: Employment & Economic Characteristics (ACS DP03, 2010)
+# Section 3: Employment & Economic Characteristics (ACS DP03, 2010)
 # =============================================================================
 # Two sub-tables extracted from the same raw file:
-#   4a. Mean travel time to work (single row, row 27)
-#   4b. Occupation counts by type (rows 29-34)
+#   3a. Mean travel time to work (single row, row 27)
+#   3b. Occupation counts by type (rows 29-34)
 
 econ_raw <- read_csv(
   here("data", "raw", "economics_DP03.csv")
 )
 
-# --- 4a. Mean travel time to work --------------------------------------------
+# --- 3a. Mean travel time to work --------------------------------------------
 mtt_raw <- econ_raw[27, ]
 
 # convert to long
@@ -191,7 +145,7 @@ mean_travel_time_final <- mtt_transposed %>%
   mutate(census_tract = str_extract(census_tract, TRACT_PATTERN)) %>%
   mutate(census_tract = sapply(census_tract, transform_census_tract))
 
-# --- 4b. Occupation ----------------------------------------------------------
+# --- 3b. Occupation ----------------------------------------------------------
 occupation_raw <- econ_raw[28:49, ][2:7, ]
 
 # convert to long
@@ -219,7 +173,7 @@ occupation_final <- occ_transposed %>%
 
 
 # =============================================================================
-# Section 5: Transportation by Vehicle Availability (ACS B08141, 2010)
+# Section 4: Transportation by Vehicle Availability (ACS B08141, 2010)
 # =============================================================================
 vehicle_raw <- read_csv(
   here("data", "raw", "transportation_vehicles_B08141.csv")
@@ -274,7 +228,7 @@ vehicle_final <- v_transposed %>%
 
 
 # =============================================================================
-# Section 6: Occupation by Median Earnings (ACS B24011, 2010)
+# Section 5: Occupation by Median Earnings (ACS B24011, 2010)
 # =============================================================================
 # Median earnings by occupation type. Only the 5 major occupation categories
 # used in the thesis are retained.
@@ -313,7 +267,7 @@ occupation_salary_final <- salary_transposed %>%
 
 
 # =============================================================================
-# Section 7: PM2.5 Air Pollution (CDC, 2006–2010)
+# Section 6: PM2.5 Air Pollution (CDC, 2006–2010)
 # =============================================================================
 # Daily predicted PM2.5 concentrations at census tract level.
 # The full CDC file is several GB and not stored in this repo.
@@ -357,10 +311,8 @@ datasets <- list(
   # --- Core thesis datasets ---
   sprawl_index                 = spr_index_final,
   demographics                 = d_total,
-  work_commute_time            = travel_time_final,
   mean_travel_time             = mean_travel_time_final,
   occupation                   = occupation_final,
-  industry                     = industry_final,
   occupation_salary            = occupation_salary_final,
   transportation_vehicle_avail = vehicle_final,
   PM25_concentrations          = pm25_final
@@ -373,4 +325,4 @@ for (sheet_name in names(datasets)) {
 
 saveWorkbook(wb, file = here("data", "processed", "thesis_data.xlsx"), overwrite = TRUE)
 
-message("✔ thesis_data.xlsx saved to data/processed/")
+message("thesis_data.xlsx saved to data/processed/")
