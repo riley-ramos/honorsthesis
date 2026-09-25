@@ -53,6 +53,8 @@ This analysis is organized into two stages: data preparation and analysis. All s
 **<u>Exploratory</u>** (not used in final thesis)
 * `exploratory/`: Scripts from earlier stages of analysis that were not incorporated into the final paper, including alternative model specifications and race-group breakdowns
 
+## Replication Instructions
+To run the code locally, clone the repository and open `unseen_borders.Rproj` in RStudio. All file paths are managed with the `here` package and will work automatically from the project root.
 
 
 
