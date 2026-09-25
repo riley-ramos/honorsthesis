@@ -34,7 +34,7 @@ The tables listed under the US Census Bureau are available to view via the Censu
 
 ## Code Structure
 
-This analysis is organized into two stages: data preparation and analysis. All scripts are located in the `R/` folder and are designed to be run in order. 
+This analysis is organized into two stages: data preparation and analysis. All scripts are located in the `r_scripts/` folder and are designed to be run in order. 
 
 **<u>Data Preparation</u>**
 * `01_data_cleaning.R`: Imports and cleans all raw data sources, standardizes census tract identifiers, reverses sprawl index scale, and exports a single Excel workbook (`data/processed/thesis_data.xlsx`), with one sheet per dataset.
