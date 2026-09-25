@@ -59,16 +59,13 @@ race <- demographics %>%
     perc_white = (white_population / total_population) * 100
   )
 
-# Join race with sprawl index
 indices_race <- inner_join(sprawl, race, by = "census_tract")
 
 # --- 2b. Income --------------------------------------------------------------
 income <- demographics %>%
   select(census_tract, median_income) %>%
-  # Scale to thousands so coefficients are interpretable as "per $1,000 increase"
   mutate(median_income = median_income / 1000)
 
-# Join income with sprawl index
 income_sprawl <- inner_join(sprawl, income, by = "census_tract")
 
 # --- 2c. Combined race + income ----------------------------------------------
